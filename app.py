@@ -1,17 +1,34 @@
+import os
 
-from flask import Flask, request, jsonify
-from transformers import pipeline
+from flask import Flask, jsonify, request
+
 
 app = Flask(__name__)
-generator = pipeline("text-generation", model="gpt2")
 
-@app.route('/generate', methods=['POST'])
+
+@app.get("/health")
+def health():
+    return jsonify({
+        "status": "healthy",
+        "service": "SUPREME-ADMIN",
+    })
+
+
+@app.post("/generate")
 def generate():
-    data = request.json
-    prompt = data.get("prompt", "")
-    result = generator(prompt, max_length=200, num_return_sequences=1)
-    return jsonify(result[0])
+    data = request.get_json(silent=True) or {}
+    prompt = str(data.get("prompt", "")).strip()
+
+    if not prompt:
+        return jsonify({"error": "prompt is required"}), 400
+
+    return jsonify({
+        "text": "AI generation is delegated to the MAIN-BASE-FOUNDATION platform.",
+        "prompt": prompt,
+        "status": "delegated",
+    })
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
-    
+    port = int(os.getenv("PORT", "10000"))
+    app.run(host="0.0.0.0", port=port, debug=False)
