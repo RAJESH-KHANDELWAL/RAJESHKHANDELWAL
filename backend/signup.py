@@ -1,6 +1,7 @@
 
 """
-SUPREMESETUHUB Backend Sign Up
+👑 RAJESHKHANDELWAL 👑
+Backend Sign Up
 """
 
 from pydantic import BaseModel, Field, EmailStr
