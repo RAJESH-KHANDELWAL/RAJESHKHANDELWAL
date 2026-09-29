@@ -1,6 +1,6 @@
 
 """
-SUPREMESETUHUB Backend Package
+👑 RAJESHKHANDELWAL 👑
 
 Central backend package initialization.
 """
