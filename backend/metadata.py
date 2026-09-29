@@ -1,6 +1,7 @@
 
 """
-SUPREMESETUHUB Backend Metadata
+👑 RAJESHKHANDELWAL 👑
+Backend Metadata
 """
 
 from backend.constants import BACKEND_NAME, BACKEND_VERSION, BACKEND_STATUS
