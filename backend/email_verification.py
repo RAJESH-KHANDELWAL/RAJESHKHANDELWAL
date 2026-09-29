@@ -1,6 +1,7 @@
 
 """
-SUPREMESETUHUB Backend Email Verification
+👑 RAJESHKHANDELWAL 👑
+Backend Email Verification
 """
 
 from pydantic import BaseModel, EmailStr, Field
