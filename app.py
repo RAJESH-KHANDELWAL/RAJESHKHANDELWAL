@@ -1,28 +1,40 @@
+
+"""
+👑 RAJESHKHANDELWAL 👑
+Backend Application
+"""
+
 import os
 import requests
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-APP_NAME = os.getenv("APP_NAME", "SUPREME-ADMIN")
+APP_NAME = os.getenv("APP_NAME", "RAJESHKHANDELWAL")
 PORT = int(os.getenv("PORT", "10000"))
 SUPREME_API_URL = os.getenv("SUPREME_API_URL", "http://localhost:10000")
 SUPREME_API_KEY = os.getenv("SUPREME_API_KEY", "")
 SUPREME_ID = os.getenv("SUPREME_ID", "SUP-9C4M-7X2K-6P8R")
 OWNER_PERSON_ID = os.getenv("OWNER_PERSON_ID", "PRS-7K4M-2Q8N-6T1X")
 
+
 # CORS support
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add(
+        "Access-Control-Allow-Headers", "Content-Type,Authorization"
+    )
+    response.headers.add(
+        "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS"
+    )
     return response
+
 
 def call_supreme(endpoint):
     headers = {
         "Authorization": f"Bearer {SUPREME_API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
     url = f"{SUPREME_API_URL.rstrip('/')}{endpoint}"
     try:
@@ -31,6 +43,7 @@ def call_supreme(endpoint):
     except Exception as exc:
         return 500, {"error": str(exc)}
 
+
 @app.get("/")
 def root():
     return jsonify({
@@ -38,8 +51,9 @@ def root():
         "status": "running",
         "supreme_id": SUPREME_ID,
         "owner_person_id": OWNER_PERSON_ID,
-        "version": "1.0.0"
+        "version": "1.0.0",
     }), 200
+
 
 @app.get("/health")
 def health():
@@ -47,8 +61,9 @@ def health():
         "service": APP_NAME,
         "status": "healthy",
         "supreme_id": SUPREME_ID,
-        "owner_person_id": OWNER_PERSON_ID
+        "owner_person_id": OWNER_PERSON_ID,
     }), 200
+
 
 @app.get("/supreme/bridge/status")
 def bridge_status():
@@ -59,7 +74,7 @@ def bridge_status():
             "status": "bridge_error",
             "supreme_id": SUPREME_ID,
             "owner_person_id": OWNER_PERSON_ID,
-            "upstream": payload
+            "upstream": payload,
         }), status_code
 
     return jsonify({
@@ -67,8 +82,9 @@ def bridge_status():
         "status": "healthy",
         "supreme_id": SUPREME_ID,
         "owner_person_id": OWNER_PERSON_ID,
-        "upstream": payload
+        "upstream": payload,
     }), 200
+
 
 @app.get("/supreme/bridge/profile")
 def bridge_profile():
@@ -77,7 +93,7 @@ def bridge_profile():
         return jsonify({
             "service": APP_NAME,
             "status": "bridge_error",
-            "upstream": payload
+            "upstream": payload,
         }), status_code
 
     return jsonify({
@@ -85,8 +101,9 @@ def bridge_profile():
         "status": "healthy",
         "supreme_id": SUPREME_ID,
         "owner_person_id": OWNER_PERSON_ID,
-        "profile": payload
+        "profile": payload,
     }), 200
+
 
 @app.get("/supreme/bridge/search")
 def bridge_search():
@@ -99,7 +116,7 @@ def bridge_search():
         return jsonify({
             "service": APP_NAME,
             "status": "bridge_error",
-            "upstream": payload
+            "upstream": payload,
         }), status_code
 
     return jsonify({
@@ -107,22 +124,25 @@ def bridge_search():
         "status": "healthy",
         "supreme_id": SUPREME_ID,
         "owner_person_id": OWNER_PERSON_ID,
-        "results": payload
+        "results": payload,
     }), 200
+
 
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({
         "error": "Not found",
-        "message": "The requested endpoint does not exist"
+        "message": "The requested endpoint does not exist",
     }), 404
+
 
 @app.errorhandler(500)
 def server_error(error):
     return jsonify({
         "error": "Server error",
-        "message": "Internal server error"
+        "message": "Internal server error",
     }), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=PORT, debug=False)
