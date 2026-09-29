@@ -1,6 +1,7 @@
 
 """
-SUPREMESETUHUB Backend Password Reset
+👑 RAJESHKHANDELWAL 👑
+Backend Password Reset
 """
 
 from pydantic import BaseModel, Field, EmailStr
