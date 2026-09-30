@@ -1,17 +1,51 @@
 from __future__ import annotations
 
 from pathlib import Path
+from urllib.parse import quote
 
-from flask import Flask, jsonify, request, send_from_directory
+import requests
+
+from flask import (
+    Flask,
+    jsonify,
+    request,
+    send_from_directory,
+)
+
+
+# ============================================================
+# APPLICATION
+# ============================================================
 
 app = Flask(__name__)
+
 
 # ============================================================
 # FRONTEND
 # ============================================================
+# Actual RAJESHKHANDELWAL Home Page:
+#
+# frontend/
+# └── supreme/
+#     └── index.html
+#
+# All frontend assets such as CSS, JS, images, etc.
+# should also be available inside frontend/supreme/
+# ============================================================
 
 FRONTEND_DIR = (
-    Path(__file__).resolve().parents[2] / "frontend"
+    Path(__file__).resolve().parents[2]
+    / "frontend"
+    / "supreme"
+)
+
+
+# ============================================================
+# SUPREME CENTRAL API
+# ============================================================
+
+SUPREME_API_URL = (
+    "https://supremesetuhub-3v4e.onrender.com"
 )
 
 
@@ -21,18 +55,14 @@ FRONTEND_DIR = (
 
 @app.after_request
 def after_request(response):
-    response.headers.add(
-        "Access-Control-Allow-Origin",
-        "*"
-    )
 
-    response.headers.add(
-        "Access-Control-Allow-Headers",
+    response.headers["Access-Control-Allow-Origin"] = "*"
+
+    response.headers["Access-Control-Allow-Headers"] = (
         "Content-Type,Authorization"
     )
 
-    response.headers.add(
-        "Access-Control-Allow-Methods",
+    response.headers["Access-Control-Allow-Methods"] = (
         "GET,PUT,POST,DELETE,OPTIONS"
     )
 
@@ -55,6 +85,16 @@ def root():
 # ============================================================
 # FRONTEND STATIC FILES
 # ============================================================
+# Examples:
+#
+# /style.css
+# /script.js
+# /images/logo.png
+#
+# These files are served from:
+#
+# frontend/supreme/
+# ============================================================
 
 @app.get("/<path:filename>")
 def frontend_files(filename):
@@ -70,7 +110,10 @@ def frontend_files(filename):
 
     return jsonify({
         "error": "Not found",
-        "message": "The requested endpoint does not exist"
+        "message": (
+            "The requested endpoint "
+            "or frontend file does not exist"
+        )
     }), 404
 
 
@@ -83,7 +126,9 @@ def health():
 
     return jsonify({
         "service": "RAJESHKHANDELWAL",
-        "status": "healthy"
+        "status": "healthy",
+        "frontend": "frontend/supreme/index.html",
+        "supreme_api": SUPREME_API_URL
     }), 200
 
 
@@ -91,14 +136,7 @@ def health():
 # SUPREME BRIDGE
 # ============================================================
 
-SUPREME_API_URL = (
-    "https://supremesetuhub-3v4e.onrender.com"
-)
-
-
-def call_supreme(endpoint):
-
-    import requests
+def call_supreme(endpoint: str):
 
     url = (
         SUPREME_API_URL.rstrip("/")
@@ -112,17 +150,32 @@ def call_supreme(endpoint):
             timeout=15
         )
 
+        try:
+            payload = response.json()
+
+        except ValueError:
+
+            payload = {
+                "error": (
+                    "SUPREME returned "
+                    "a non-JSON response"
+                ),
+                "status_code": response.status_code,
+                "text": response.text[:1000]
+            }
+
         return (
             response.status_code,
-            response.json()
+            payload
         )
 
-    except Exception as exc:
+    except requests.RequestException as exc:
 
         return (
             500,
             {
-                "error": str(exc)
+                "error": str(exc),
+                "upstream": SUPREME_API_URL
             }
         )
 
@@ -189,9 +242,14 @@ def bridge_search():
             "error": "Missing q parameter"
         }), 400
 
+    encoded_query = quote(
+        query,
+        safe=""
+    )
+
     status_code, payload = call_supreme(
         "/supreme/search?q="
-        + query
+        + encoded_query
     )
 
     return jsonify({
@@ -206,7 +264,7 @@ def bridge_search():
 
 
 # ============================================================
-# ERROR HANDLERS
+# 404 ERROR
 # ============================================================
 
 @app.errorhandler(404)
@@ -216,10 +274,14 @@ def not_found(error):
         "error": "Not found",
         "message": (
             "The requested endpoint "
-            "does not exist"
+            "or resource does not exist"
         )
     }), 404
 
+
+# ============================================================
+# 500 ERROR
+# ============================================================
 
 @app.errorhandler(500)
 def server_error(error):
@@ -231,7 +293,7 @@ def server_error(error):
 
 
 # ============================================================
-# RUN
+# LOCAL RUN
 # ============================================================
 
 if __name__ == "__main__":
